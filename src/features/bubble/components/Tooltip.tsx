@@ -7,7 +7,7 @@ const defaultTooltipFontSize = 16; // Default font size for tooltip
 
 type TooltipProps = {
   showTooltip: boolean;
-  position: { bottom: number; right: number };
+  position: { left: number };
   buttonSize: number;
   tooltipMessage?: string;
   tooltipBackgroundColor?: string;
@@ -47,8 +47,8 @@ const Tooltip = (props: TooltipProps) => {
       <div
         class="tooltip"
         style={{
-          right: `calc(${props.position.right}px + 20px)`,
-          bottom: `${props.position.bottom + props.buttonSize + 10}px`,
+          left: `calc(${props.position.left}px + 20px)`,
+          bottom: '28px',
           '--tooltip-background-color': backgroundColor,
           '--tooltip-text-color': textColor,
           '--tooltip-font-size': fontSize,

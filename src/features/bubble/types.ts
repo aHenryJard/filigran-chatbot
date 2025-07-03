@@ -1,5 +1,8 @@
 export type BubbleParams = {
   theme?: BubbleTheme;
+  ref?: HTMLElement;
+  left: number;
+  text?: string;
 };
 
 export type BubbleTheme = {
@@ -67,13 +70,13 @@ export type ChatWindowTheme = {
   errorMessage?: string;
   backgroundColor?: string;
   backgroundImage?: string;
+  boxShadow?: string;
   height?: number;
   width?: number;
   fontSize?: number;
   userMessage?: UserMessageTheme;
   botMessage?: BotMessageTheme;
   textInput?: TextInputTheme;
-  feedback?: FeedbackTheme;
   footer?: FooterTheme;
   sourceDocsTitle?: string;
   poweredByTextColor?: string;
@@ -89,8 +92,8 @@ export type ButtonTheme = {
   backgroundColor?: string;
   iconColor?: string;
   customIconSrc?: string;
-  bottom?: number;
-  right?: number;
+  top?: number;
+  left?: number;
   dragAndDrop?: boolean; // parameter to enable drag and drop(true or false)
   autoWindowOpen?: autoWindowOpenTheme;
 };

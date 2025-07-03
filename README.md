@@ -1,8 +1,10 @@
 <!-- markdownlint-disable MD030 -->
 
-# Flowise Embed
+# Filigran Chatbot
 
-Javascript library to display flowise chatbot on your website
+> 🪧 Most of the code from this repository is taken from [FlowiseEmbedChat](https://github.com/FlowiseAI/FlowiseChatEmbed).
+>
+> The chatbot interface and logic is kept, but we remove ties to flowise in favor of an agnostic approach, to be able to connect custom agentic server.
 
 ![Flowise](https://github.com/FlowiseAI/FlowiseChatEmbed/blob/main/images/ChatEmbed.gif?raw=true)
 
@@ -18,15 +20,14 @@ Dev:
 yarn dev
 ```
 
-A development server will be running on http://localhost:5678 automatically. Update `public/index.html` to connect directly to Flowise:
+A development server will be running on http://localhost:5678 automatically. Update `public/index.html` to connect to your server:
 
 ```html
 <!-- public/index.html -->
 <script type="module">
-  import Chatbot from 'https://localhost:5678/web.js'; // Change to from './web.js' to 'https://localhost:5678/web.js'
+  import Chatbot from 'https://localhost:5678/web.js'; // Switch between './web.js' or 'https://localhost:5678/web.js'
   Chatbot.init({
-    chatflowid: '91e9c803-5169-4db9-8207-3c0915d71c5f', // Add your Flowise chatflowid
-    apiHost: 'https://your-flowise-instance.com', // Add your Flowise apiHost
+    agenticUrl: 'https://your-agentic-service-url/endpoint', // Add your endpoint
   });
 </script>
 ```
@@ -37,65 +38,17 @@ Build:
 yarn build
 ```
 
-## Embed in your HTML
-
-### PopUp
-
-```html
-<script type="module">
-  import Chatbot from 'https://cdn.jsdelivr.net/npm/flowise-embed/dist/web.js';
-  Chatbot.init({
-    chatflowid: '<chatflowid>',
-    apiHost: 'http://localhost:3000',
-  });
-</script>
-```
-
-### FullPage
-
-```html
-<script type="module">
-  import Chatbot from 'https://cdn.jsdelivr.net/npm/flowise-embed/dist/web.js';
-  Chatbot.initFull({
-    chatflowid: '<chatflowid>',
-    apiHost: 'http://localhost:3000',
-  });
-</script>
-<flowise-fullchatbot></flowise-fullchatbot>
-```
-
-To enable full screen, add `margin: 0` to <code>body</code> style, and confirm you don't set height and width
-
-```html
-<body style="margin: 0">
-  <script type="module">
-    import Chatbot from 'https://cdn.jsdelivr.net/npm/flowise-embed/dist/web.js';
-    Chatbot.initFull({
-      chatflowid: '<chatflowid>',
-      apiHost: 'http://localhost:3000',
-      theme: {
-        chatWindow: {
-          // height: 700, don't set height
-          // width: 400, don't set width
-        },
-      },
-    });
-  </script>
-</body>
-```
-
 ## Configuration
 
 You can also customize chatbot with different configuration
 
 ```html
 <script type="module">
-  import Chatbot from 'https://cdn.jsdelivr.net/npm/flowise-embed/dist/web.js';
+  import Chatbot from 'https://localhost:5678/web.js'; // Switch between './web.js' or 'https://localhost:5678/web.js'
   Chatbot.init({
-    chatflowid: '91e9c803-5169-4db9-8207-3c0915d71c5f',
-    apiHost: 'http://localhost:3000',
+    agenticUrl: 'https://your-agentic-service-url/endpoint', // Add your endpoint
     chatflowConfig: {
-      // topK: 2
+      some: "variable" // this will be send in request header
     },
     observersConfig: {
       // (optional) Allows you to execute code in parent based upon signal observations within the chatbot.
@@ -214,88 +167,6 @@ You can also customize chatbot with different configuration
 </script>
 ```
 
-## (Experimental) Proxy Server Setup
-
-The Flowise Embed Proxy Server enhances the security of your chatbot implementation by acting as a protective intermediary layer. This server eliminates the need to expose sensitive Flowise instance details in your frontend code and provides several key security benefits:
-
-![Proxy Server](https://github.com/FlowiseAI/FlowiseChatEmbed/blob/main/images/proxyserver.png?raw=true)
-
-- **Enhanced Security**: Conceals your Flowise API host and chatflow IDs from client-side exposure
-- **Access Control**: Implements strict domain-based restrictions for chatbot embedding
-- **Secure Communication**: Acts as a secure gateway for all interactions between your website and Flowise instance
-- **Authentication Management**: Handles API key authentication securely on the server side, away from client exposure
-
-This proxy server can be deployed to any Node.js hosting platform.
-
-## Quick Start
-
-1. Configure environment:
-
-```bash
-# Copy .env.example to .env and configure required settings:
-API_HOST=https://your-flowise-instance.com
-FLOWISE_API_KEY=your-api-key
-
-# Configure your chatflows:
-# Format: [identifier]=[chatflowId],[allowedDomain1],[allowedDomain2],...
-#
-# identifier: Any name you choose (e.g., agent1, support, salesbot)
-# chatflowId: The UUID of your Flowise chatflow
-# allowedDomains: Comma-separated list of domains where this chat can be embedded
-#
-# Examples:
-support=abc123-def456,https://example.com
-agent1=xyz789-uvw456,https://sales.example.com
-helpdesk=ghi123-jkl456,https://help.example.com,https://support.example.com
-```
-
-2. Install dependencies: (assuming you did not run `yarn install` yet)
-
-```bash
-yarn install
-```
-
-3. Start proxy server:
-
-```bash
-yarn start
-# Server will be available at:
-# - Local:  http://localhost:3001
-# - Cloud:  [Your Platform URL] (e.g., https://your-app.herokuapp.com)
-```
-
-4. Once the proxy server is running in production, you will be able to embed your chatbots safely without exposing your Flowise API host and chatflow IDs as below:
-
-```html
-<script type="module">
-  import Chatbot from 'your-proxy-server-url/web.js'; // Must be 'your-proxy-server-url/web.js'
-  Chatbot.init({
-    chatflowid: 'your-identifier-here', // Must match an identifier from your .env
-    apiHost: 'your-proxy-server-url', // Must match the URL of your proxy server
-    chatflowConfig: {
-      // ...
-    },
-  });
-</script>
-```
-
-5. (optional) If you want to test any identifier in public/index.html, you can update it as below:
-
-```html
-<!-- public/index.html -->
-chatflowid: 'your-identifier-here' // Must match an identifier from your .env
-```
-
-**Important Notes:**
-
-- To ensure secure embedding, you must explicitly whitelist the websites authorized to embed each chatbot. This configuration is done within the .env file. Note that this also applies to your server's URL when deployed to a cloud environment, or http://localhost:3001 for local development, if needed you must whitelist it as well.
-- Wildcard domains (\*) are not supported for security reasons
-- Identifiers are case-insensitive (e.g., 'Support' and 'support' are treated the same)
-
-## Cloud Deployment Requirements
-
-When deploying to cloud platforms, you must configure the environment variables directly in your platform. The proxy server will not start without these variables being properly set. Compatible with Nixpacks for automatic deployment configuration.
-
 ## Development Mode (For Local Testing)
 
 1. Configure your environment variables (see above)
@@ -311,34 +182,19 @@ yarn start
 3. Update the test page configuration:
 
 - Open `public/index.html` in your code editor
-- Modify the `chatflowid` and `apiHost` to match your `.env` settings:
+- Modify the `agenticUrl`:
 
 ```html
 <!-- public/index.html -->
 <script type="module">
   import Chatbot from './web.js';
   Chatbot.init({
-    chatflowid: 'agent1', // Must match an identifier from your .env
-    apiHost: 'http://localhost:3001', // Change this from window.location.origin to 'http://localhost:3001'
+    agenticUrl: 'https://your-flowise-instance.com/api/v1/predicition/91e9c803-5169-4db9-8207-3c0915d71c5f', // Add your endpoint
   });
 </script>
 ```
 
-For full page testing, use this configuration instead:
-
-```html
-<!-- public/index.html -->
-<flowise-fullchatbot></flowise-fullchatbot>
-<script type="module">
-  import Chatbot from './web.js';
-  Chatbot.initFull({
-    chatflowid: 'agent1', // Must match an identifier from your .env
-    apiHost: 'http://localhost:3001', // Change this from window.location.origin to 'http://localhost:3001'
-  });
-</script>
-```
-
-4. While the proxy server is running, open a new terminal and start the development server:
+4. Open a new terminal and start the development server:
 
 ```bash
 yarn dev
@@ -354,4 +210,4 @@ yarn dev
 
 ## License
 
-Source code in this repository is made available under the [MIT License](https://github.com/FlowiseAI/Flowise/blob/master/LICENSE.md).
+Source code in this repository is made available under the [Apache 2.0 License](https://www.apache.org/licenses/LICENSE-2.0).

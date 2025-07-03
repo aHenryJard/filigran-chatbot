@@ -1,6 +1,4 @@
 export * from './ClipboardIcon';
-export * from './ThumbsDownIcon';
-export * from './ThumbsUpIcon';
 export * from './AddImageIcon';
 export * from './CircleDotIcon';
 export * from './DeleteIcon';
@@ -11,3 +9,6 @@ export * from './XIcon';
 export * from './TickIcon';
 export * from './AttachmentIcon';
 export * from './SparklesIcon';
+export * from './ExpandIcon';
+export * from './ReduceIcon';
+export * from './CloseIcon';

@@ -1,10 +1,7 @@
-import { createEffect, Show, createSignal, onMount, For } from 'solid-js';
+import { createEffect, For, onMount, Show } from 'solid-js';
 import { Avatar } from '../avatars/Avatar';
 import { Marked } from '@ts-stack/markdown';
-import { FeedbackRatingType, sendFeedbackQuery, sendFileDownloadQuery, updateFeedbackQuery } from '@/queries/sendMessageQuery';
 import { FileUpload, IAction, MessageType } from '../Bot';
-import { CopyToClipboardButton, ThumbsDownButton, ThumbsUpButton } from '../buttons/FeedbackButtons';
-import FeedbackContentDialog from '../FeedbackContentDialog';
 import { AgentReasoningBubble } from './AgentReasoningBubble';
 import { TickIcon, XIcon } from '../icons';
 import { SourceBubble } from '../bubbles/SourceBubble';
@@ -13,18 +10,11 @@ import { WorkflowTreeView } from '../treeview/WorkflowTreeView';
 
 type Props = {
   message: MessageType;
-  chatflowid: string;
-  chatId: string;
-  apiHost?: string;
-  onRequest?: (request: RequestInit) => Promise<void>;
-  fileAnnotations?: any;
   showAvatar?: boolean;
   avatarSrc?: string;
   backgroundColor?: string;
   textColor?: string;
-  chatFeedbackStatus?: boolean;
   fontSize?: number;
-  feedbackColor?: string;
   isLoading: boolean;
   dateTimeToggle?: DateTimeToggleTheme;
   showAgentMessages?: boolean;
@@ -37,22 +27,11 @@ type Props = {
 const defaultBackgroundColor = '#f7f8ff';
 const defaultTextColor = '#303235';
 const defaultFontSize = 16;
-const defaultFeedbackColor = '#3B81F6';
 
 export const BotBubble = (props: Props) => {
   let botDetailsEl: HTMLDetailsElement | undefined;
 
   Marked.setOptions({ isNoP: true, sanitize: props.renderHTML !== undefined ? !props.renderHTML : true });
-
-  const [rating, setRating] = createSignal('');
-  const [feedbackId, setFeedbackId] = createSignal('');
-  const [showFeedbackContentDialog, setShowFeedbackContentModal] = createSignal(false);
-  const [copiedMessage, setCopiedMessage] = createSignal(false);
-  const [thumbsUpColor, setThumbsUpColor] = createSignal(props.feedbackColor ?? defaultFeedbackColor); // default color
-  const [thumbsDownColor, setThumbsDownColor] = createSignal(props.feedbackColor ?? defaultFeedbackColor); // default color
-
-  // Store a reference to the bot message element for the copyMessageToClipboard function
-  const [botMessageElement, setBotMessageElement] = createSignal<HTMLElement | null>(null);
 
   const setBotMessageRef = (el: HTMLSpanElement) => {
     if (el) {
@@ -82,83 +61,6 @@ export const BotBubble = (props: Props) => {
       el.querySelectorAll('a').forEach((link) => {
         link.target = '_blank';
       });
-
-      // Store the element ref for the copy function
-      setBotMessageElement(el);
-
-      if (props.message.rating) {
-        setRating(props.message.rating);
-        if (props.message.rating === 'THUMBS_UP') {
-          setThumbsUpColor('#006400');
-        } else if (props.message.rating === 'THUMBS_DOWN') {
-          setThumbsDownColor('#8B0000');
-        }
-      }
-      if (props.fileAnnotations && props.fileAnnotations.length) {
-        for (const annotations of props.fileAnnotations) {
-          const button = document.createElement('button');
-          button.textContent = annotations.fileName;
-          button.className =
-            'py-2 px-4 mb-2 justify-center font-semibold text-white focus:outline-none flex items-center disabled:opacity-50 disabled:cursor-not-allowed disabled:brightness-100 transition-all filter hover:brightness-90 active:brightness-75 file-annotation-button';
-          button.addEventListener('click', function () {
-            downloadFile(annotations);
-          });
-          const svgContainer = document.createElement('div');
-          svgContainer.className = 'ml-2';
-          svgContainer.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-download" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="#ffffff" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" /><path d="M7 11l5 5l5 -5" /><path d="M12 4l0 12" /></svg>`;
-
-          button.appendChild(svgContainer);
-          el.appendChild(button);
-        }
-      }
-    }
-  };
-
-  const downloadFile = async (fileAnnotation: any) => {
-    try {
-      const response = await sendFileDownloadQuery({
-        apiHost: props.apiHost,
-        body: { fileName: fileAnnotation.fileName, chatflowId: props.chatflowid, chatId: props.chatId } as any,
-        onRequest: props.onRequest,
-      });
-      const blob = new Blob([response.data]);
-      const downloadUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.download = fileAnnotation.fileName;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    } catch (error) {
-      console.error('Download failed:', error);
-    }
-  };
-
-  const copyMessageToClipboard = async () => {
-    try {
-      const text = botMessageElement() ? botMessageElement()?.textContent : '';
-      await navigator.clipboard.writeText(text || '');
-      setCopiedMessage(true);
-      setTimeout(() => {
-        setCopiedMessage(false);
-      }, 2000); // Hide the message after 2 seconds
-    } catch (error) {
-      console.error('Error copying to clipboard:', error);
-    }
-  };
-
-  const saveToLocalStorage = (rating: FeedbackRatingType) => {
-    const chatDetails = localStorage.getItem(`${props.chatflowid}_EXTERNAL`);
-    if (!chatDetails) return;
-    try {
-      const parsedDetails = JSON.parse(chatDetails);
-      const messages: MessageType[] = parsedDetails.chatHistory || [];
-      const message = messages.find((msg) => msg.messageId === props.message.messageId);
-      if (!message) return;
-      message.rating = rating;
-      localStorage.setItem(`${props.chatflowid}_EXTERNAL`, JSON.stringify({ ...parsedDetails, chatHistory: messages }));
-    } catch (e) {
-      return;
     }
   };
 
@@ -185,83 +87,6 @@ export const BotBubble = (props: Props) => {
     return newSourceDocuments;
   };
 
-  const onThumbsUpClick = async () => {
-    if (rating() === '') {
-      const body = {
-        chatflowid: props.chatflowid,
-        chatId: props.chatId,
-        messageId: props.message?.messageId as string,
-        rating: 'THUMBS_UP' as FeedbackRatingType,
-        content: '',
-      };
-      const result = await sendFeedbackQuery({
-        chatflowid: props.chatflowid,
-        apiHost: props.apiHost,
-        body,
-        onRequest: props.onRequest,
-      });
-
-      if (result.data) {
-        const data = result.data as any;
-        let id = '';
-        if (data && data.id) id = data.id;
-        setRating('THUMBS_UP');
-        setFeedbackId(id);
-        setShowFeedbackContentModal(true);
-        // update the thumbs up color state
-        setThumbsUpColor('#006400');
-        saveToLocalStorage('THUMBS_UP');
-      }
-    }
-  };
-
-  const onThumbsDownClick = async () => {
-    if (rating() === '') {
-      const body = {
-        chatflowid: props.chatflowid,
-        chatId: props.chatId,
-        messageId: props.message?.messageId as string,
-        rating: 'THUMBS_DOWN' as FeedbackRatingType,
-        content: '',
-      };
-      const result = await sendFeedbackQuery({
-        chatflowid: props.chatflowid,
-        apiHost: props.apiHost,
-        body,
-        onRequest: props.onRequest,
-      });
-
-      if (result.data) {
-        const data = result.data as any;
-        let id = '';
-        if (data && data.id) id = data.id;
-        setRating('THUMBS_DOWN');
-        setFeedbackId(id);
-        setShowFeedbackContentModal(true);
-        // update the thumbs down color state
-        setThumbsDownColor('#8B0000');
-        saveToLocalStorage('THUMBS_DOWN');
-      }
-    }
-  };
-
-  const submitFeedbackContent = async (text: string) => {
-    const body = {
-      content: text,
-    };
-    const result = await updateFeedbackQuery({
-      id: feedbackId(),
-      apiHost: props.apiHost,
-      body,
-      onRequest: props.onRequest,
-    });
-
-    if (result.data) {
-      setFeedbackId('');
-      setShowFeedbackContentModal(false);
-    }
-  };
-
   onMount(() => {
     if (botDetailsEl && props.isLoading) {
       botDetailsEl.open = true;
@@ -275,118 +100,6 @@ export const BotBubble = (props: Props) => {
       botDetailsEl.open = false;
     }
   });
-
-  const renderArtifacts = (item: Partial<FileUpload>) => {
-    // Instead of onMount, we'll use a callback ref to apply styles
-    const setArtifactRef = (el: HTMLSpanElement) => {
-      if (el) {
-        const textColor = props.textColor ?? defaultTextColor;
-        // Apply textColor to all elements except code blocks
-        el.querySelectorAll('a, h1, h2, h3, h4, h5, h6, strong, em, blockquote, li').forEach((element) => {
-          (element as HTMLElement).style.color = textColor;
-        });
-
-        // Code blocks (with pre) get white text
-        el.querySelectorAll('pre').forEach((element) => {
-          (element as HTMLElement).style.color = '#FFFFFF';
-          // Also ensure any code elements inside pre have white text
-          element.querySelectorAll('code').forEach((codeElement) => {
-            (codeElement as HTMLElement).style.color = '#FFFFFF';
-          });
-        });
-
-        // Inline code (not in pre) gets green text
-        el.querySelectorAll('code:not(pre code)').forEach((element) => {
-          (element as HTMLElement).style.color = '#4CAF50'; // Green color
-        });
-
-        el.querySelectorAll('a').forEach((link) => {
-          link.target = '_blank';
-        });
-      }
-    };
-
-    return (
-      <>
-        <Show when={item.type === 'png' || item.type === 'jpeg'}>
-          <div class="flex items-center justify-center p-0 m-0">
-            <img
-              class="w-full h-full bg-cover"
-              src={(() => {
-                const isFileStorage = typeof item.data === 'string' && item.data.startsWith('FILE-STORAGE::');
-                return isFileStorage
-                  ? `${props.apiHost}/api/v1/get-upload-file?chatflowId=${props.chatflowid}&chatId=${props.chatId}&fileName=${(
-                      item.data as string
-                    ).replace('FILE-STORAGE::', '')}`
-                  : (item.data as string);
-              })()}
-            />
-          </div>
-        </Show>
-        <Show when={item.type === 'html'}>
-          <div class="mt-2">
-            <div innerHTML={item.data as string} />
-          </div>
-        </Show>
-        <Show when={item.type !== 'png' && item.type !== 'jpeg' && item.type !== 'html'}>
-          <span
-            ref={setArtifactRef}
-            innerHTML={Marked.parse(item.data as string)}
-            class="prose"
-            style={{
-              'background-color': props.backgroundColor ?? defaultBackgroundColor,
-              color: props.textColor ?? defaultTextColor,
-              'border-radius': '6px',
-              'font-size': props.fontSize ? `${props.fontSize}px` : `${defaultFontSize}px`,
-            }}
-          />
-        </Show>
-      </>
-    );
-  };
-
-  const formatDateTime = (dateTimeString: string | undefined, showDate: boolean | undefined, showTime: boolean | undefined) => {
-    if (!dateTimeString) return '';
-
-    try {
-      const date = new Date(dateTimeString);
-
-      // Check if the date is valid
-      if (isNaN(date.getTime())) {
-        console.error('Invalid ISO date string:', dateTimeString);
-        return '';
-      }
-
-      let formatted = '';
-
-      if (showDate) {
-        const dateFormatter = new Intl.DateTimeFormat('en-US', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        });
-        const [{ value: month }, , { value: day }, , { value: year }] = dateFormatter.formatToParts(date);
-        formatted = `${month.charAt(0).toUpperCase() + month.slice(1)} ${day}, ${year}`;
-      }
-
-      if (showTime) {
-        const timeFormatter = new Intl.DateTimeFormat('en-US', {
-          hour: 'numeric',
-          minute: '2-digit',
-          hour12: true,
-          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        });
-        const timeString = timeFormatter.format(date).toLowerCase();
-        formatted = formatted ? `${formatted}, ${timeString}` : timeString;
-      }
-
-      return formatted;
-    } catch (error) {
-      console.error('Error formatting date:', error);
-      return '';
-    }
-  };
 
   return (
     <div>
@@ -418,28 +131,15 @@ export const BotBubble = (props: Props) => {
                     <AgentReasoningBubble
                       agentName={agent.agentName ?? ''}
                       agentMessage={msgContent}
-                      agentArtifacts={agent.artifacts}
                       backgroundColor={props.backgroundColor}
                       textColor={props.textColor}
                       fontSize={props.fontSize}
-                      apiHost={props.apiHost}
-                      chatflowid={props.chatflowid}
-                      chatId={props.chatId}
                       renderHTML={props.renderHTML}
                     />
                   );
                 }}
               </For>
             </details>
-          )}
-          {props.message.artifacts && props.message.artifacts.length > 0 && (
-            <div class="flex flex-row items-start flex-wrap w-full gap-2">
-              <For each={props.message.artifacts}>
-                {(item) => {
-                  return item !== null ? <>{renderArtifacts(item)}</> : null;
-                }}
-              </For>
-            </div>
           )}
           {props.message.message && (
             <span
@@ -504,7 +204,6 @@ export const BotBubble = (props: Props) => {
                   return (
                     <SourceBubble
                       pageContent={URL ? URL.pathname : src.pageContent}
-                      metadata={src.metadata}
                       onSourceClick={() => {
                         if (URL) {
                           window.open(src.metadata.source, '_blank');
@@ -517,45 +216,6 @@ export const BotBubble = (props: Props) => {
                 }}
               </For>
             </div>
-          </>
-        )}
-      </div>
-      <div>
-        {props.chatFeedbackStatus && props.message.messageId && (
-          <>
-            <div class={`flex items-center px-2 pb-2 ${props.showAvatar ? 'ml-10' : ''}`}>
-              <CopyToClipboardButton feedbackColor={props.feedbackColor} onClick={() => copyMessageToClipboard()} />
-              <Show when={copiedMessage()}>
-                <div class="copied-message" style={{ color: props.feedbackColor ?? defaultFeedbackColor }}>
-                  Copied!
-                </div>
-              </Show>
-              {rating() === '' || rating() === 'THUMBS_UP' ? (
-                <ThumbsUpButton feedbackColor={thumbsUpColor()} isDisabled={rating() === 'THUMBS_UP'} rating={rating()} onClick={onThumbsUpClick} />
-              ) : null}
-              {rating() === '' || rating() === 'THUMBS_DOWN' ? (
-                <ThumbsDownButton
-                  feedbackColor={thumbsDownColor()}
-                  isDisabled={rating() === 'THUMBS_DOWN'}
-                  rating={rating()}
-                  onClick={onThumbsDownClick}
-                />
-              ) : null}
-              <Show when={props.message.dateTime}>
-                <div class="text-sm text-gray-500 ml-2">
-                  {formatDateTime(props.message.dateTime, props?.dateTimeToggle?.date, props?.dateTimeToggle?.time)}
-                </div>
-              </Show>
-            </div>
-            <Show when={showFeedbackContentDialog()}>
-              <FeedbackContentDialog
-                isOpen={showFeedbackContentDialog()}
-                onClose={() => setShowFeedbackContentModal(false)}
-                onSubmit={submitFeedbackContent}
-                backgroundColor={props.backgroundColor}
-                textColor={props.textColor}
-              />
-            </Show>
           </>
         )}
       </div>
