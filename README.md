@@ -89,7 +89,7 @@ You can also customize chatbot with different configuration
       },
       disclaimer: {
         title: 'Disclaimer',
-        message: 'By using this chatbot, you agree to the <a target="_blank" href="https://flowiseai.com/terms">Terms & Condition</a>',
+        message: 'By using this chatbot, you agree to the <a target="_blank" href="https://your-url/terms">Terms & Condition</a>',
         textColor: 'black',
         buttonColor: '#3b82f6',
         buttonText: 'Start Chatting',
@@ -107,7 +107,7 @@ You can also customize chatbot with different configuration
       chatWindow: {
         showTitle: true,
         showAgentMessages: true,
-        title: 'Flowise Bot',
+        title: 'Chat Bot',
         titleAvatarSrc: 'https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/google-messages.svg',
         titleBackgroundColor: '#3B81F6',
         titleTextColor: '#ffffff',
@@ -158,8 +158,8 @@ You can also customize chatbot with different configuration
         footer: {
           textColor: '#303235',
           text: 'Powered by',
-          company: 'Flowise',
-          companyLink: 'https://flowiseai.com',
+          company: 'Filigran',
+          companyLink: 'https://filigran.io',
         },
       },
     },
@@ -189,7 +189,7 @@ yarn start
 <script type="module">
   import Chatbot from './web.js';
   Chatbot.init({
-    agenticUrl: 'https://your-flowise-instance.com/api/v1/predicition/91e9c803-5169-4db9-8207-3c0915d71c5f', // Add your endpoint
+    agenticUrl: 'https://your-agentic-service-url/endpoint', // Add your endpoint
   });
 </script>
 ```
