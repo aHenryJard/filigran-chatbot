@@ -2,10 +2,15 @@ name: CI Check that filigran chatbot can build
 on: pull_request
 jobs:
   build:
-    runs-on: nikolaik/python-nodejs:python3.11-nodejs22-alpine
+    runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: "23"
+        registry-url: https://registry.npmjs.org/
     - name: Build Filigran chatbot
       run: |
         yarn install
