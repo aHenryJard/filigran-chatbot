@@ -1,0 +1,13 @@
+name: CI Check that filigran chatbot can build
+on: pull_request
+jobs:
+  build:
+    runs-on: nikolaik/python-nodejs:python3.11-nodejs22-alpine
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    - name: Build Filigran chatbot
+      run: |
+        yarn install
+        yarn lint
+        yarn build
