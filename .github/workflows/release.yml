@@ -1,8 +1,6 @@
 name: Release filigran-chatbot
 
-permissions:
-  contents: write
-  packages: write
+permissions: write-all
 
 on:
   push:
