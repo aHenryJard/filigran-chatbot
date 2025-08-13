@@ -36,4 +36,4 @@ jobs:
           pwd
           gh release create ${{ github.ref_name }} filigran-chatbot-*.tgz
         env:
-          GITHUB_TOKEN: ${{ secret.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
