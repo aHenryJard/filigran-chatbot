@@ -22,6 +22,8 @@ jobs:
       - name: Install dependencies
         run: |
           echo "Starting release version ${{ github.ref }}"
+          #Disable auto tag from yarn since we already have a git tag
+          yarn config set version-git-tag false
           yarn version --new-version ${{ github.ref }}
           yarn install
           yarn pack --out filigran-chatbot-${{ github.ref }}.tgz
