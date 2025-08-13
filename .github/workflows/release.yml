@@ -29,7 +29,8 @@ jobs:
           yarn config set version-commit-hooks false
           yarn version --new-version ${{ github.ref_name }}
           yarn install
-          yarn pack --out filigran-chatbot-${{ github.ref_name }}.tgz
+          # yarn pack --out filigran-chatbot-${{ github.ref_name }}.tgz
+          tar czf filigran-chatbot-${{ github.ref_name }}.tgz dist
           ls -lart
           pwd
           gh release create ${{ github.ref_name }} filigran-chatbot-*.tgz
