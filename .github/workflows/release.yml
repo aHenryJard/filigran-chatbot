@@ -20,8 +20,9 @@ jobs:
           registry-url: https://registry.npmjs.org/
 
       - name: Install dependencies
-        run: yarn install
-        run: yarn pack --out ./artifacts/filigran-chatbot-${{ github.ref }}.tgz
+        run: |
+          yarn install
+          yarn pack --out ./artifacts/filigran-chatbot-${{ github.ref }}.tgz
 
       - name: Release Filigran chatbot
         id: create_release
