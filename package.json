@@ -1,6 +1,6 @@
 {
   "name": "filigran-chatbot",
-  "version": "0.0.7",
+  "version": "0.0.6",
   "description": "Javascript library to display chatbot on your website",
   "type": "module",
   "main": "dist/index.js",
