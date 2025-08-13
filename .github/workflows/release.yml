@@ -22,17 +22,8 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
-      - name: Release Filigran Chatbot
-        uses: actions/create-release
+      - name: Release Filigran chatbot
         id: create_release
-        with:
-          draft: false
-          prerelease: false
-          release_name: ${{ github.ref }}
-          tag_name: ${{ github.ref }}
-          body_path: CHANGELOG.md
+        run: gh release create ${{ github.ref }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
-
-      - name: Publish to npm
-        run: echo "yarn publish --new-version ${{ github.ref }}"
