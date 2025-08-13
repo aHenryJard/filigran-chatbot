@@ -1,4 +1,4 @@
-name: Release and publish filigran-chatbot
+name: Release filigran-chatbot
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - '*'
 
 jobs:
-  publish:
+  release-chatbot:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -21,11 +21,10 @@ jobs:
 
       - name: Install dependencies
         run: |
+          echo "Starting release version ${{ github.ref }}"
           yarn install
           yarn pack --out ./artifacts/filigran-chatbot-${{ github.ref }}.tgz
-
-      - name: Release Filigran chatbot
-        id: create_release
-        run: gh release create ${{ github.ref }} ./artifacts/filigran-chatbot-*.tgz
+          ls -lart
+          gh release create ${{ github.ref }} ./artifacts/*.tgz
         env:
           GITHUB_TOKEN: ${{ github.token }}
