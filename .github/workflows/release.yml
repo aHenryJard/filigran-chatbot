@@ -1,5 +1,9 @@
 name: Release filigran-chatbot
 
+permissions:
+  contents: write
+  packages: write
+
 on:
   push:
     tags:
@@ -32,4 +36,4 @@ jobs:
           pwd
           gh release create ${{ github.ref_name }} filigran-chatbot-*.tgz
         env:
-          GITHUB_TOKEN: ${{ secret.PERSO_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secret.GITHUB_TOKEN }}
