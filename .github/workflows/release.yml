@@ -1,0 +1,38 @@
+name: Release and publish filigran-chatbot
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          registry-url: https://registry.npmjs.org/
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Release Filigran Chatbot
+        uses: actions/create-release
+        id: create_release
+        with:
+          draft: false
+          prerelease: false
+          release_name: ${{ github.ref }}
+          tag_name: ${{ github.ref }}
+          body_path: CHANGELOG.md
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Publish to npm
+        run: echo "yarn publish --new-version ${{ github.ref }}"
