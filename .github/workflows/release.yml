@@ -22,9 +22,11 @@ jobs:
       - name: Install dependencies
         run: |
           echo "Starting release version ${{ github.ref }}"
+          yarn version --new-version ${{ github.ref }}
           yarn install
-          yarn pack --out ./artifacts/filigran-chatbot-${{ github.ref }}.tgz
+          yarn pack --out filigran-chatbot-${{ github.ref }}.tgz
           ls -lart
-          gh release create ${{ github.ref }} ./artifacts/*.tgz
+          pwd
+          gh release create ${{ github.ref }} filigran-chatbot-*.tgz
         env:
           GITHUB_TOKEN: ${{ github.token }}
